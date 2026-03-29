@@ -1,0 +1,36 @@
+{
+  "network_mode": "bridge",
+  "command": ["python", "app/server.py"],
+  "port": 8000,
+  "startup_delay_seconds": 1.5,
+  "startup_timeout_seconds": 8,
+  "healthcheck": {
+    "method": "GET",
+    "path": "/health"
+  },
+  "http_requests": [
+    {
+      "name": "grid-status",
+      "method": "GET",
+      "path": "/grid/status"
+    },
+    {
+      "name": "telemetry-post",
+      "method": "POST",
+      "path": "/api/telemetry",
+      "json": {
+        "substation": "north-1",
+        "load": 0.72,
+        "operator": "demo"
+      }
+    }
+  ],
+  "attacks": [
+    {
+      "name": "command-injection-simulation",
+      "method": "GET",
+      "path": "/api/admin/run?cmd=whoami"
+    }
+  ]
+}
+
