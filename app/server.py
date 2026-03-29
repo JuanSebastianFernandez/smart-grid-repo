@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlparse
 
 
 class SmartGridHandler(BaseHTTPRequestHandler):
@@ -19,11 +20,23 @@ class SmartGridHandler(BaseHTTPRequestHandler):
         return
 
     def do_GET(self) -> None:  # noqa: N802
-        if self.path == "/health":
+        parsed = urlparse(self.path)
+        if parsed.path == "/health":
             self._write_json({"status": "ok", "service": "smartgrid-app"})
             return
-        if self.path == "/grid/status":
-            self._write_json({"substations": 4, "load": 0.43, "alerts": 0, "mode": "baseline"})
+        if parsed.path == "/grid/status":
+            self._write_json({"substations": 4, "load": 0.71, "alerts": 1, "mode": "runtime-attackable"})
+            return
+        if parsed.path == "/api/admin/run":
+            cmd = parse_qs(parsed.query).get("cmd", [""])[0]
+            self._write_json(
+                {
+                    "status": "blocked",
+                    "message": "Admin command endpoint should not be exposed in production.",
+                    "cmd": cmd,
+                },
+                status=500,
+            )
             return
         self._write_json({"error": "not_found"}, status=404)
 
